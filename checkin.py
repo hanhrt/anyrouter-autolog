@@ -504,13 +504,16 @@ async def main():
 	print(f'[INFO] Found {len(accounts)} account configurations')
 
 	last_balance_hash = load_balance_hash()
+	always_notify = os.getenv('NOTIFY_ALWAYS', '0').strip() == '1'
+	if always_notify:
+		print('[NOTIFY] NOTIFY_ALWAYS=1, will send notification regardless of balance changes')
 
 	success_count = 0
 	total_count = len(accounts)
 	notification_content = []
 	current_balances = {}
 	account_check_in_details = {}
-	need_notify = False
+	need_notify = always_notify
 	balance_changed = False
 
 	for i, account in enumerate(accounts):
@@ -520,7 +523,7 @@ async def main():
 			if success:
 				success_count += 1
 
-			should_notify_this_account = False
+			should_notify_this_account = always_notify
 
 			if not success:
 				should_notify_this_account = True
@@ -566,6 +569,8 @@ async def main():
 					account_result += f'\n{user_info_after["display"]}'
 				elif user_info_after:
 					account_result += f'\n{user_info_after.get("error", "Unknown error")}'
+				if success and account_key in account_check_in_details:
+					account_result = format_check_in_notification(account_check_in_details[account_key])
 				notification_content.append(account_result)
 
 		except Exception as e:
@@ -631,7 +636,7 @@ async def main():
 
 		print(notify_content)
 		notify.push_message('AnyRouter Check-in Alert', notify_content, msg_type='text')
-		print('[NOTIFY] Notification sent due to failures or balance changes')
+		print('[NOTIFY] Notification sent')
 	else:
 		print('[INFO] All accounts successful and no balance changes detected, notification skipped')
 

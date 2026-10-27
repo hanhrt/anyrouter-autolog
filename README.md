@@ -291,6 +291,19 @@ PROVIDERS={"agentrouter":{"use_proxy":true}}
 
 脚本支持多种通知方式，可以通过配置以下环境变量开启，如果 `webhook` 有要求安全设置，例如钉钉，可以在新建机器人时选择自定义关键词，填写 `AnyRouter`。
 
+### 通知去重开关
+
+通过环境变量 `NOTIFY_ALWAYS` 控制通知频率：
+
+| 值 | 行为 |
+| --- | --- |
+| `0`（默认，未配置时也使用此值） | 保留现有去重逻辑：首次运行、余额或累计消耗变化、账号失败或异常时通知；全部成功且无变化时不通知。 |
+| `1` | 关闭通知去重，每次运行完成均发送账号结果和统计，包括重复签到、余额未变化的情况。 |
+
+GitHub Actions：进入仓库 **Settings → Secrets and variables → Actions → Variables → New repository variable**，添加 `NOTIFY_ALWAYS`，值设为 `1`。改回 `0` 或删除该变量即可恢复去重。也可以在 `production` 环境的 Environment variables 中设置此参数。
+
+本地运行：在 `.env` 中添加 `NOTIFY_ALWAYS=1`。仍需配置至少一种下方的通知渠道；运行在生成结果前被取消或中断时，无法保证发送通知。
+
 ### 邮箱通知(STMP)
 
 - `EMAIL_USER`: 发件人邮箱地址/STMP 登录地址
